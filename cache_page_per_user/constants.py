@@ -1,0 +1,2 @@
+SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS']
+DEFAULT_GROUP = 'cached_views'

@@ -1,21 +1,17 @@
 from django.core.cache import cache
 
+from cache_page_per_user.constants import DEFAULT_GROUP
 
-def clear_cache(query, custom_query=None):
+
+def clear_cache(query=None):
     """
     clears cache in redis by query string
-    :param query: key_prefix or full query in case custom_query is True
-    :param custom_query:
+    :param query:
     :return:
     """
     def search_key(q):
         def wrapper(key):
-            query_page = f'.cache_page.{q}.'
-            query_header = f'.cache_header.{q}.'
-            query_group = f'{q}:cached_views'
-            if query_group in key or query_page in key or query_header in key or (
-                    custom_query is not None and custom_query in key
-            ):
+            if query in key:
                 return 1
             return 0
         return wrapper
@@ -36,7 +32,7 @@ def clear_cache(query, custom_query=None):
             del cache._cache[key]
 
 
-def get_cache_key(key_prefix, user_id, group='cached_views', versioned=False, versions_timeout=864000):
+def get_cache_key(key_prefix, user_id, group=DEFAULT_GROUP, versioned=False, versions_timeout=864000):
     """
     returns
     :param key_prefix:

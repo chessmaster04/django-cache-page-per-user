@@ -3,6 +3,9 @@ from functools import wraps
 from django.core.cache import cache
 from django.utils.cache import patch_response_headers
 
+from cache_page_per_user.constants import DEFAULT_GROUP
+from cache_page_per_user.constants import SAFE_METHODS
+
 
 def custom_cache_page(
         ttl,
@@ -15,7 +18,7 @@ def custom_cache_page(
     def _cache(view_func):
         @wraps(view_func)
         def __cache(request, *args, **kwargs):
-            if getattr(request, 'do_not_cache', False) or request.method != 'GET':
+            if getattr(request, 'do_not_cache', False) or request.method not in SAFE_METHODS:
                 return view_func(request, *args, **kwargs)
             group = group_func(request) if group_func else None
             group_version = cache.get_or_set(group, 1, timeout=versions_timeout) if versioned else 0
@@ -50,6 +53,6 @@ def cache_page_per_user(ttl, key_prefix):
     return custom_cache_page(
         ttl=ttl,
         key_func=key_func,
-        group_func=lambda r: 'cached_views',
+        group_func=lambda r: DEFAULT_GROUP,
         key_prefix=key_prefix,
     )

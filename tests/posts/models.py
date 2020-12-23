@@ -5,6 +5,7 @@ from django.dispatch import receiver
 
 from cache_page_per_user.utils import clear_cache
 from cache_page_per_user.utils import get_cache_key
+from tests.posts.constants import CachePrefixes
 
 
 class Post(models.Model):
@@ -24,5 +25,5 @@ class CachedPostWitHSignal(models.Model):
 
 @receiver(pre_save, sender=CachedPostWitHSignal)
 def create_slug_wrapper(sender, instance, **kwargs):
-    custom_query = get_cache_key('cached_post_with_signal', instance.author_id)
-    clear_cache('cached_post_with_signal', custom_query)
+    query = get_cache_key(CachePrefixes.CACHED_POST_WITH_SIGNAL, instance.author_id)
+    clear_cache(query)

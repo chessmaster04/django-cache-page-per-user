@@ -1,7 +1,7 @@
 import json
 
 from django.contrib.auth.models import User
-from django.core.cache import cache
+from django.test import Client
 from django.test import TestCase
 from django.urls import reverse
 
@@ -54,11 +54,14 @@ class CachePageTestCase(TestCase):
         cls.cached_post = CachedPostFactory(author_id=cls.user1.id, text='old text')
         cls.cached_post_with_signal = CachedPostWitHSignalFactory(author_id=cls.user1.id, text='old text')
 
+        cls.cached_post2 = CachedPostFactory(author_id=cls.user2.id, text='old text')
         cls.cached_post_with_signal2 = CachedPostWitHSignalFactory(author_id=cls.user2.id, text='old text')
 
         cls.url_post = lambda self, pk: reverse('post_get_or_update', args=(pk,))
         cls.url_cached_post = lambda self, pk: reverse('cached_post_get_or_update', args=(pk,))
         cls.url_cached_post_with_signal = lambda self, pk: reverse('cached_post_with_signal_get_or_update', args=(pk,))
+
+        cls.client = Client()
 
     def setUp(self):
         pass
@@ -95,19 +98,34 @@ class CachePageTestCase(TestCase):
 
     def test_cached_post(self):
         post = self.cached_post
+        post2 = self.cached_post2
         url = self.url_cached_post(post.id)
+        url2 = self.url_cached_post(post2.id)
 
-        # auth
+        # auth 1
         login = self.client.login(username=self.user1.username, password='password')
         self.assertTrue(login)
 
-        # make cache
+        # make cache 1
         response_fetch = self.client.get(url)
         response_fetch_body = response_fetch.json()
         self.assertEqual(response_fetch.status_code, 200)
         self.assertDictEqual(response_fetch_body, serialize_post(post))
 
-        # make update
+        # auth 2
+        login2 = self.client.login(username=self.user2.username, password='password')
+        self.assertTrue(login2)
+
+        # make cache 2
+        response_fetch2 = self.client.get(url2)
+        response_fetch_body2 = response_fetch2.json()
+        self.assertEqual(response_fetch2.status_code, 200)
+        self.assertDictEqual(response_fetch_body2, serialize_post(post2))
+
+        # auth 1
+        self.client.login(username=self.user1.username, password='password')
+
+        # make update 1
         new_post_data = {
             'text': 'new text',
         }
@@ -115,7 +133,7 @@ class CachePageTestCase(TestCase):
         response_update_body = response_update.json()
         self.assertDictEqual(response_update_body, {**serialize_post(post), **new_post_data})
 
-        # check cached post
+        # check cached post 1
         response_fetch2 = self.client.get(url)
         response_fetch2_body = response_fetch2.json()
         self.assertEqual(response_fetch2_body, serialize_post(post))
@@ -123,18 +141,33 @@ class CachePageTestCase(TestCase):
     def test_cached_post_with_signal(self):
         post = self.cached_post_with_signal
         url = self.url_cached_post_with_signal(post.id)
+        post2 = self.cached_post_with_signal2
+        url2 = self.url_cached_post_with_signal(post2.id)
 
-        # auth
+        # auth 1
         login = self.client.login(username=self.user1.username, password='password')
         self.assertTrue(login)
 
-        # make cache
+        # make cache 1
         response_fetch = self.client.get(url)
         response_fetch_body = response_fetch.json()
         self.assertEqual(response_fetch.status_code, 200)
         self.assertDictEqual(response_fetch_body, serialize_post(post))
 
-        # make update
+        # auth 2
+        login2 = self.client.login(username=self.user2.username, password='password')
+        self.assertTrue(login2)
+
+        # make cache 2
+        response_fetch2 = self.client.get(url2)
+        response_fetch_body2 = response_fetch2.json()
+        self.assertEqual(response_fetch2.status_code, 200)
+        self.assertDictEqual(response_fetch_body2, serialize_post(post2))
+
+        # auth 1
+        self.client.login(username=self.user1.username, password='password')
+
+        # make update 1
         new_post_data = {
             'text': 'new text',
         }
