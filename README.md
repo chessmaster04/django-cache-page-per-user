@@ -3,6 +3,10 @@ Extending the Django's [`cache_page`](https://docs.djangoproject.com/en/dev/topi
 Supports caching per user and per language.
 Support custom settings and clearing cache.
 
+Support of caches
+- django_redis.cache.RedisCache
+- django.core.cache.backends.locmem.LocMemCache
+
 ## Installation
 Run `pip install django-cache-page-per-user`
 
