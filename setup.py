@@ -20,7 +20,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/chessmaster04/django-cache-page-per-user',
-    download_url='',
+    download_url='https://pypi.org/project/django-cache-page-per-user/0.1.0/',
     packages=setuptools.find_packages(),
     classifiers=[
         'Development Status :: 5 - Production/Stable',
