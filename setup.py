@@ -4,7 +4,8 @@ with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='django-cache-page-per-user',
+    name='custom-cache-page',
+    packages = ['custom-cache-page'],
     version='0.1.0',
     author='Boris Trubin',
     author_email='mgbit3214@gmail.com',
